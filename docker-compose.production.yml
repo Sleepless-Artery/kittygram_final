@@ -14,9 +14,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: always
 
   backend:
-    build: ./backend/
+    image: lisenka5/kittygram_backend:latest
     env_file: .env
     volumes:
       - static:/app/static
@@ -28,17 +29,17 @@ services:
       sh -c "python manage.py migrate &&
              python manage.py collectstatic --noinput &&
              gunicorn --bind 0.0.0.0:8000 kittygram_backend.wsgi"
+    restart: always
 
   frontend:
-    build: ./frontend/
+    image: lisenka5/kittygram_frontend:latest
     volumes:
       - static:/static
-    command: >
-      sh -c "cp -r /build/* /static/ &&
-             echo 'Frontend static files copied'"
+    command: cp -r /build/* /static/
+    restart: always
 
   gateway:
-    build: ./nginx/
+    image: lisenka5/kittygram_gateway:latest
     ports:
       - "9000:80"
     volumes:
@@ -47,3 +48,4 @@ services:
     depends_on:
       - backend
       - frontend
+    restart: always
